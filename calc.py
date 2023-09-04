@@ -1,58 +1,62 @@
 from tkinter import *
-import string
-import random
-import pyperclip
+expression = ""
 
+def press(num):
+    global expression
+    expression = expression + str(num)
+    equation.set(expression)
+    
+def clear_entry():
+    global expression
+    expression = expression[:-1]
+    equation.set(expression)
 
-def generator():
-    small_alphabets = string.ascii_lowercase
-    capital_alphabets = string.ascii_uppercase
-    numbers = string.digits
-    special_characters = string.punctuation
+def clear():
+    global expression
+    expression = ""
+    equation.set("")
 
-    all_characters = small_alphabets+capital_alphabets+numbers+special_characters
-    password_length = int(length_Box.get())
+def equalpress():
+    try:
+        global expression
+        total = str(eval(expression))
+        equation.set(total)
+        expression = ""
+    except:
+        equation.set("Error")
+        expression = ""
 
-    password = []
-    for _ in range(password_length):
-        password.append(random.choice(all_characters))
+gui = Tk()
+gui.title("Simple Calculator")
 
-    passwordField.insert(0, ''.join(password))
+gui.geometry("350x450")
+gui.configure(bg="black")
 
+equation = StringVar()
 
-def copy():
-    random_password = passwordField.get()
-    pyperclip.copy(random_password)
+entry_field = Entry(gui, textvariable=equation, font=('Helvetica', 20))
+entry_field.grid(row=0, column=0, columnspan=4, ipadx=8, ipady=8, pady=10)
 
+button_config = {'fg': 'black', 'bg': 'gray', 'font': ('Helvetica', 18), 'height': 2, 'width': 8}
 
-root = Tk()
-root.config(bg='gray20')
-choice = IntVar()
-Font = ('arial', 13, 'bold')
-PasswordLabel = Label(root, text='Password Generator', font=('times new roman', 20, 'bold'), bg='black', fg='blue')
-PasswordLabel.grid(pady=10)
-WeakRadioButton = Radiobutton(root, text='Weak', value=1, variable=choice, font=Font)
-WeakRadioButton.grid(pady=5)
+buttons = [
+    '7', '8', '9', '/',
+    '4', '5', '6', '*',
+    '1', '2', '3', '-',
+    '0', '.', '=', '+'
+]
 
-MediumRadioButton = Radiobutton(root, text='Medium', value=2, variable=choice, font=Font)
-MediumRadioButton.grid(pady=5)
+row_val = 1
+col_val = 0
 
-StrongRadioButton = Radiobutton(root, text='Strong', value=3, variable=choice, font=Font)
-StrongRadioButton.grid(pady=5)
+for button in buttons:
+    Button(gui, text=button, command=lambda b=button: press(b) if b != '=' else equalpress(), **button_config).grid(row=row_val, column=col_val)
+    col_val += 1
+    if col_val > 3:
+        col_val = 0
+        row_val += 1
 
-lengthLabel = Label(root, text='Password Length', font=Font, bg='gray20', fg='white')
-lengthLabel.grid(pady=5)
+Button(gui, text='CE', command=clear_entry, **button_config).grid(row=5, column=0)
+Button(gui, text='C', command=clear, **button_config).grid(row=5, column=1)
 
-length_Box = Spinbox(root, from_=5, to=18, width=5, font=Font)
-length_Box.grid(pady=5)
-
-generateButton = Button(root, text='Generate', font=Font, command=generator)
-generateButton.grid(pady=5)
-
-passwordField = Entry(root, width=25, bd=2, font=Font)
-passwordField.grid()
-
-copyButton = Button(root, text='Copy', font=Font, command=copy)
-copyButton.grid(pady=5)
-
-root.mainloop()
+gui.mainloop()
